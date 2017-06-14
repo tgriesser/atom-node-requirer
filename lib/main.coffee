@@ -28,7 +28,7 @@ module.exports =
     @projectPaths = null
     @stopLoadPathsTask()
     @active = false
-    
+
   config:
     aliasList:
       title: 'Alias list',

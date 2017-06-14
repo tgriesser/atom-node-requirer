@@ -24,7 +24,7 @@ class FuzzyFinderView extends SelectListView
     @addClass('fuzzy-finder')
     @setMaxItems(10)
     @subscriptions = new CompositeDisposable
-    # 
+    #
     # splitLeft = => @splitOpenPath (pane) -> pane.splitLeft.bind(pane)
     # splitRight = => @splitOpenPath (pane) -> pane.splitRight.bind(pane)
     # splitUp = => @splitOpenPath (pane) -> pane.splitUp.bind(pane)
@@ -49,18 +49,24 @@ class FuzzyFinderView extends SelectListView
     @alternateScoring = atom.config.get 'fuzzy-finder.useAlternateScoring'
     @subscriptions.add atom.config.onDidChange 'fuzzy-finder.useAlternateScoring', ({newValue}) => @alternateScoring = newValue
 
-  prettifyPath: (filePath) -> 
+  prettifyPath: (filePath) ->
     if filePath.endsWith('/index.js')
       filePath = filePath.slice(0,-'/index.js'.length)
+    if filePath.endsWith('/index.jsx')
+      filePath = filePath.slice(0,-'/index.jsx'.length)
     if filePath.endsWith('.js')
       filePath = filePath.slice(0,-'.js'.length)
+    if filePath.endsWith('.jsx')
+      filePath = filePath.slice(0,-'.jsx'.length)
     if filePath == '.'
       filePath = './index'
     return filePath
-  getNameFromFilePath: (filePath) -> 
+  getNameFromFilePath: (filePath) ->
     name = filePath.slice(filePath.lastIndexOf('/')+1)
     if name.endsWith('.json')
       name = name.slice(0,-'.json'.length)
+    if name.endsWith('.jsx')
+      name = name.slice(0,-'.jsx'.length)
     first = name.charAt(0)
     startsWithUpperCase = first == first.toUpperCase()
     name = camelcase(name)
@@ -70,14 +76,14 @@ class FuzzyFinderView extends SelectListView
   getAliases: ()->
     aliasList = atom.config.get('node-requirer.aliasList')
     aliases = {}
-    try 
+    try
       aliases = JSON.parse(aliasList)
     catch e
       atom.notifications.addError('Error in node-requirer alias list. Make sure you are using valid :' + e.toString(), {dismissable: true})
       # console.log('aliases:',aliases)
     return aliases
-    
-  
+
+
   openPath: (filePath, lineNumber, openOptions) ->
     editor = atom.workspace.getActiveTextEditor()
     currentEditorPath = editor.getPath()
@@ -89,10 +95,10 @@ class FuzzyFinderView extends SelectListView
       relativePath = @prettifyPath(relativePath)
       name = @getNameFromFilePath(relativePath)
       # name = moduleName(filePath)
-    else 
+    else
       # the path is an npm package name or an npm package subpath
       name = filePath
-      aliases = @getAliases
+      aliases = @getAliases()
       relativePath = @prettifyPath(filePath)
       if aliases[name]
         name = aliases[name]
@@ -100,9 +106,9 @@ class FuzzyFinderView extends SelectListView
         name = @getNameFromFilePath(relativePath)
     if @useOldRequireSyntax
       editor.insertText("var " + name + " = require("+ "'" + relativePath + "')")
-    else 
+    else
       editor.insertText("import " + name + " from "+ "'" + relativePath + "'")
-        
+
   getFilterKey: ->
     'projectRelativePath'
 
@@ -121,10 +127,10 @@ class FuzzyFinderView extends SelectListView
     @panel?.destroy()
     @subscriptions?.dispose()
     @subscriptions = null
-    
+
   setUseOldRequireSyntax: (val) ->
     @useOldRequireSyntax = val
-    
+
   viewForItem: ({filePath, projectRelativePath}) ->
     # Style matched characters in search results
     filterQuery = @getFilterQuery()
@@ -197,11 +203,11 @@ class FuzzyFinderView extends SelectListView
       textEditor.scrollToBufferPosition(position, center: true)
       textEditor.setCursorBufferPosition(position)
       textEditor.moveToFirstCharacterOfLine()
-  # 
+  #
   # splitOpenPath: (splitFn) ->
   #   {filePath} = @getSelectedItem() ? {}
   #   lineNumber = @getLineNumber()
-  # 
+  #
   #   if @isQueryALineJump() and editor = atom.workspace.getActiveTextEditor()
   #     pane = atom.workspace.getActivePane()
   #     splitFn(pane)(copyActiveItem: true)

@@ -26,20 +26,20 @@ class PathLoader
       return ignoredName.pattern
     )
     ignoredNamePatterns.push('node_modules')
-    
+
     @paths = @paths.concat(nativeNodeModules)
-    for nodeModulePath in @nodeModulesPaths 
+    for nodeModulePath in @nodeModulesPaths
       nodeModules = fs.readdirSync(nodeModulePath)
       @paths = @paths.concat(nodeModules)
-      for moduleName in nodeModules 
-        try 
+      for moduleName in nodeModules
+        try
           subprojpath = path.join(nodeModulePath, moduleName)
           # subfiles = fs.readdirSync()
           subPaths = walkSync(subprojpath, { globs: ['**/*.js'], directories: false, ignore: ignoredNamePatterns})
           fullSubPaths = subPaths.map((subPath)->
             indexLocation = subPath.indexOf('index.js')
-            if indexLocation != -1 
-              subPath = subPath.slice(0, indexLocation)  
+            if indexLocation != -1
+              subPath = subPath.slice(0, indexLocation)
             return path.join(moduleName, subPath))
           @paths = @paths.concat(fullSubPaths)
         catch e
@@ -118,7 +118,7 @@ module.exports = (rootPaths, followSymlinks, ignoreVcsIgnores, nodeModulesPaths,
       ignoredNames.push(new Minimatch(ignore, matchBase: true, dot: true))
     catch error
       console.warn "Error parsing ignore pattern (#{ignore}): #{error.message}"
-  
+
   async.each(
     rootPaths,
     (rootPath, next) ->
